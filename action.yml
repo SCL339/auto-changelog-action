@@ -1,0 +1,58 @@
+name: 'Auto Changelog Action'
+description: 'Automatically generates a beautiful CHANGELOG.md from merged PR titles, labels, and milestones'
+author: 'SCL339'
+
+branding:
+  icon: 'book-open'
+  color: 'green'
+
+inputs:
+  github-token:
+    description: 'GitHub token with read access to pull requests'
+    required: false
+    default: ${{ github.token }}
+  output-file:
+    description: 'Path to the output CHANGELOG file'
+    required: false
+    default: 'CHANGELOG.md'
+  header:
+    description: 'Custom header text for the changelog'
+    required: false
+    default: '# Changelog\n\nAll notable changes to this project will be documented in this file.'
+  unreleased-label:
+    description: 'Label for unreleased changes'
+    required: false
+    default: '## [Unreleased]'
+  include-pr-numbers:
+    description: 'Whether to include PR numbers in entries'
+    required: false
+    default: 'true'
+  group-labels:
+    description: 'JSON map of label -> heading for grouping (default groups by semver labels)'
+    required: false
+    default: '{"feature":"🚀 Features","enhancement":"✨ Enhancements","bug":"🐛 Bug Fixes","documentation":"📖 Documentation","dependencies":"📦 Dependencies","breaking":"⚠️ Breaking Changes","chore":"🔧 Maintenance"}'
+  sort-by:
+    description: 'Sort entries by "label" or "date"'
+    required: false
+    default: 'label'
+  max-entries:
+    description: 'Maximum number of PR entries to include (0 for all)'
+    required: false
+    default: '0'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate Changelog
+      shell: bash
+      run: |
+        python3 "${{ github.action_path }}/entrypoint.py" \
+          --token "${{ inputs.github-token }}" \
+          --output "${{ inputs.output-file }}" \
+          --header "${{ inputs.header }}" \
+          --unreleased "${{ inputs.unreleased-label }}" \
+          --include-pr-numbers "${{ inputs.include-pr-numbers }}" \
+          --group-labels "${{ inputs.group-labels }}" \
+          --sort-by "${{ inputs.sort-by }}" \
+          --max-entries "${{ inputs.max-entries }}" \
+          --repo "${{ github.repository }}"
